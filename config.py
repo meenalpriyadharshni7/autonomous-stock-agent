@@ -1,8 +1,12 @@
-# config.py
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
+# Only load dotenv in local development
+if os.getenv("RAILWAY_ENVIRONMENT") is None:
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except Exception:
+        pass
 
 # Fixed stocks you want to track
 CORE_STOCKS = [
