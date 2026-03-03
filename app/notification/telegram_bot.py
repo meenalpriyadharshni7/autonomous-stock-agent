@@ -4,8 +4,6 @@ from dotenv import load_dotenv
 
 from app.utils.logger import get_logger
 
-load_dotenv()
-
 logger = get_logger()
 
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
