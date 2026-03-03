@@ -9,14 +9,17 @@ MAX_LENGTH = 4000
 
 def send_telegram_message(message: str):
 
-    BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-    CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+    chat_id = os.getenv("TELEGRAM_CHAT_ID")
 
-    if not BOT_TOKEN or not CHAT_ID:
+    logger.info(f"Telegram token exists: {bool(bot_token)}")
+    logger.info(f"Telegram chat id exists: {bool(chat_id)}")
+
+    if not bot_token or not chat_id:
         logger.error("Telegram credentials not set.")
         return
 
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
 
     chunks = [
         message[i:i + MAX_LENGTH]
@@ -24,21 +27,20 @@ def send_telegram_message(message: str):
     ]
 
     for chunk in chunks:
-
         payload = {
-            "chat_id": CHAT_ID,
+            "chat_id": chat_id,
             "text": chunk
         }
 
         try:
             response = requests.post(url, json=payload, timeout=15)
 
-            if response.status_code != 200:
+            if response.status_code == 200:
+                logger.info("Telegram message sent successfully.")
+            else:
                 logger.error(
                     f"Telegram API error: {response.status_code} | {response.text}"
                 )
-            else:
-                logger.info("Telegram message sent successfully.")
 
         except Exception as e:
             logger.error(f"Telegram exception: {e}", exc_info=True)
