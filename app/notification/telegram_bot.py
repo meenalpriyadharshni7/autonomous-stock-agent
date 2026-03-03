@@ -1,18 +1,16 @@
 import os
 import requests
-from dotenv import load_dotenv
-
 from app.utils.logger import get_logger
 
 logger = get_logger()
-
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
 MAX_LENGTH = 4000
 
 
 def send_telegram_message(message: str):
+
+    BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+    CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
     if not BOT_TOKEN or not CHAT_ID:
         logger.error("Telegram credentials not set.")
