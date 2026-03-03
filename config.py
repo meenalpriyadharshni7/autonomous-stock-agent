@@ -41,18 +41,12 @@ NIFTY_50_LIST = [
 
 HISTORICAL_DAYS = 500
 
-# ===============================
-# TELEGRAM CONFIG
-# ===============================
-TELEGRAM_TOKEN = "8685634743:AAHnXj3MjiG11iPWLXgQoG9J_2285mVPj_0"
-TELEGRAM_CHAT_ID = "1435145197"
+# Secrets (from environment only)
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-# ===============================
-# EMAIL CONFIG (GMAIL EXAMPLE)
-# ===============================
-EMAIL_SENDER = "csk738931@gmail.com"
-EMAIL_PASSWORD = "rwubokqpuxqnbleg"
-EMAIL_RECEIVER = "klaussiriusremus@gmail.com"
-
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
+EMAIL_SENDER = os.getenv("EMAIL_SENDER")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+EMAIL_RECEIVER = os.getenv("EMAIL_RECEIVER")
+SMTP_SERVER = os.getenv("SMTP_SERVER")
+SMTP_PORT = os.getenv("SMTP_PORT")
