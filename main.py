@@ -122,6 +122,9 @@ def run_pipeline(debug_fetch=False):
     logger.info("Starting Autonomous Financial Decision Intelligence System")
     logger.info(f"Configured Historical Days: {HISTORICAL_DAYS}")
 
+    import os
+    logger.info(f"All ENV keys: {list(os.environ.keys())}")
+
     db = SessionLocal()
 
     try:
