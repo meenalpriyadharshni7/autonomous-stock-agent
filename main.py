@@ -129,7 +129,7 @@ def run_pipeline(debug_fetch=False):
         is_trading_day = is_nse_trading_day()
 
         # -----------------------------------------
-        # Idempotent Execution (Only For Trading Days)
+        # Idempotent Execution (Trading Days Only)
         # -----------------------------------------
         if is_trading_day:
             existing_entry = db.execute(
@@ -182,7 +182,7 @@ def run_pipeline(debug_fetch=False):
             raise ValueError("No valid stock data available.")
 
         # -----------------------------------------
-        # Backfill Accuracy (Always safe to run)
+        # Backfill Accuracy
         # -----------------------------------------
         backfill_accuracy(
             db=db,
@@ -224,7 +224,6 @@ def run_pipeline(debug_fetch=False):
 
             symbol = row["symbol"]
             enhanced_score = float(row["enhanced_score"])
-
             latest = stock_data[symbol].iloc[-1]
 
             signal, base_confidence, reasons = classify_signal(
@@ -247,7 +246,6 @@ def run_pipeline(debug_fetch=False):
                 "confidence": final_confidence
             }
 
-            # Only write DB on trading days
             if is_trading_day:
                 db.add(DailyMetrics(
                     stock_symbol=symbol,
@@ -294,7 +292,7 @@ def run_pipeline(debug_fetch=False):
         )
 
         # -----------------------------------------
-        # Reporting (Always send)
+        # Build Report
         # -----------------------------------------
         report_message = build_daily_report(
             market_regime,
@@ -307,19 +305,34 @@ def run_pipeline(debug_fetch=False):
             is_trading_day
         )
 
-        send_telegram_message(report_message)
-        send_email(
-            subject="Autonomous Financial Intelligence Report",
-            message=report_message
-        )
+        # -----------------------------------------
+        # Telegram (Guaranteed Safe)
+        # -----------------------------------------
+        try:
+            logger.info("Sending Telegram message...")
+            send_telegram_message(report_message)
+            logger.info("Telegram send attempted.")
+        except Exception as e:
+            logger.error(f"Telegram failed: {e}", exc_info=True)
+
+        # -----------------------------------------
+        # Email (Non-blocking)
+        # -----------------------------------------
+        try:
+            logger.info("Sending Email...")
+            send_email(
+                subject="Autonomous Financial Intelligence Report",
+                message=report_message
+            )
+        except Exception as e:
+            logger.error(f"Email failed: {e}", exc_info=True)
 
         if is_trading_day:
             db.commit()
 
         db.add(ExecutionLog(
             status="SUCCESS",
-            message="Pipeline executed (Trading Day)" if is_trading_day
-            else "Pipeline executed (Holiday Report Mode)"
+            message="Pipeline executed successfully"
         ))
         db.commit()
 
@@ -331,16 +344,16 @@ def run_pipeline(debug_fetch=False):
         logger.error(f"Pipeline failed: {e}", exc_info=True)
 
         try:
+            send_telegram_message(f"⚠️ Agent execution FAILED:\n{e}")
+        except Exception:
+            pass
+
+        try:
             db.add(ExecutionLog(
                 status="FAILURE",
                 message=str(e)
             ))
             db.commit()
-        except Exception:
-            pass
-
-        try:
-            send_telegram_message(f"⚠️ Agent execution FAILED:\n{e}")
         except Exception:
             pass
 
